@@ -16,6 +16,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link com.example.satellites.service.SatelliteService}.
+ *
+ * Uses Mockito to mock repository interactions and verifies service behavior
+ * for common CRUD scenarios and error paths.
+ */
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class SatelliteServiceTest {
 
@@ -37,6 +43,7 @@ class SatelliteServiceTest {
         sample.setParameters(new SatelliteParameters(10.0, 20.0, 100.0));
     }
 
+    /** Verifies save delegates to the repository and returns its result. */
     @Test
     void save_delegatesToRepository_and_returnsSavedEntity() {
         when(repository.save(any(Satellite.class))).thenReturn(sample);
@@ -48,6 +55,7 @@ class SatelliteServiceTest {
         verify(repository, times(1)).save(sample);
     }
 
+    /** When the repository returns a value, getByIdOrThrow should return it. */
     @Test
     void getByIdOrThrow_returnsEntityWhenFound() {
         when(repository.findById(42L)).thenReturn(Optional.of(sample));
@@ -59,6 +67,7 @@ class SatelliteServiceTest {
         verify(repository, times(1)).findById(42L);
     }
 
+    /** When the repository is empty, getByIdOrThrow should throw SatelliteNotFoundException. */
     @Test
     void getByIdOrThrow_throwsWhenNotFound() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
@@ -67,6 +76,7 @@ class SatelliteServiceTest {
         verify(repository, times(1)).findById(99L);
     }
 
+    /** If the entity exists, deleteById should call the repository delete. */
     @Test
     void deleteById_deletesWhenExists() {
         when(repository.existsById(42L)).thenReturn(true);
@@ -76,6 +86,7 @@ class SatelliteServiceTest {
         verify(repository, times(1)).deleteById(42L);
     }
 
+    /** If the entity does not exist, deleteById should throw SatelliteNotFoundException. */
     @Test
     void deleteById_throwsWhenNotExists() {
         when(repository.existsById(99L)).thenReturn(false);
