@@ -16,7 +16,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Verifies that POSTing a payload missing required fields (name) returns a validation error.
+ * Integration test verifying that missing required fields
+ * trigger validation errors.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,13 +30,21 @@ class PostMissingFieldIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // small record to build the request body for the test
+    // Helper record used to build test payload
     record SatelliteReq(String orbit, String launchDate, Map<String, Object> parameters) {}
 
+    /**
+     * Ensures that omitting the 'name' field results in
+     * a 400 Bad Request with validation error details.
+     */
     @Test
     void postMissingName_returnsValidationErrors() throws Exception {
-        // missing "name"
-        var req = new SatelliteReq("LEO", "1990-04-24T12:33:00", Map.of("lat", 1.0, "lon", 2.0, "alt", 3.0));
+        var req = new SatelliteReq(
+                "LEO",
+                "1990-04-24T12:33:00",
+                Map.of("lat", 1.0, "lon", 2.0, "alt", 3.0)
+        );
+
         String json = objectMapper.writeValueAsString(req);
 
         mvc.perform(post("/api/satellites")
