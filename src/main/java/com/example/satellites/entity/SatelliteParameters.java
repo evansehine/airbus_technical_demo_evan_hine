@@ -2,6 +2,12 @@ package com.example.satellites.entity;
 
 import jakarta.persistence.*;
 
+/**
+ * JPA entity representing positional parameters for a Satellite.
+ *
+ * Stores latitude, longitude and altitude values and is linked
+ * to the Satellite entity via a one-to-one relationship.
+ */
 @Entity
 @Table(name = "satellite_parameters")
 public class SatelliteParameters {
@@ -10,7 +16,6 @@ public class SatelliteParameters {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // store as primitive double; validation will happen at DTO level
     private double lat;
     private double lon;
     private double alt;
@@ -24,10 +29,13 @@ public class SatelliteParameters {
     }
 
     public Long getId() { return id; }
+
     public double getLat() { return lat; }
     public void setLat(double lat) { this.lat = lat; }
+
     public double getLon() { return lon; }
     public void setLon(double lon) { this.lon = lon; }
+
     public double getAlt() { return alt; }
     public void setAlt(double alt) { this.alt = alt; }
 }
