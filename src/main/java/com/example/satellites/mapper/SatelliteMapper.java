@@ -40,7 +40,7 @@ public final class SatelliteMapper {
                 s.getParameters() != null ? s.getParameters().getLon() : null,
                 s.getParameters() != null ? s.getParameters().getAlt() : null
         );
-        resp.setParameters(p);
+        response.setParameters(p);
         return response;
     }
 }
