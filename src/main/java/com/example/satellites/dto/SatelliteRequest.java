@@ -10,6 +10,13 @@ import jakarta.validation.constraints.DecimalMin;
 
 import java.time.LocalDateTime;
 
+/**
+ * Request DTO for creating/updating a Satellite.
+ *
+ * Holds the fields accepted by the API. Validation annotations ensure
+ * required fields and numeric ranges are enforced at the controller boundary.
+ * {@code launchDate} is expected in the pattern {@code yyyy-MM-dd'T'HH:mm:ss}.
+ */
 public class SatelliteRequest {
 
     @NotBlank
@@ -26,6 +33,12 @@ public class SatelliteRequest {
     @NotNull
     private Parameters parameters;
 
+    /**
+     * Nested parameters object containing positional values.
+     *
+     * <p>Latitude/longitude are constrained to valid geographic ranges.
+     * Altitude must be non-negative.</p>
+     */
     public static class Parameters {
         @DecimalMin(value = "-90.0")
         @DecimalMax(value = "90.0")
@@ -46,7 +59,7 @@ public class SatelliteRequest {
         public void setAlt(Double alt) { this.alt = alt; }
     }
 
-    // getters & setters omitted for brevity — add them (or use Lombok)
+    // getters & setters
     public String getName(){return name;}
     public void setName(String name){this.name = name;}
     public OrbitType getOrbit(){return orbit;}
