@@ -13,10 +13,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Centralised exception handler for REST API errors.
+ *
+ * Converts validation, parsing and domain exceptions into
+ * consistent JSON error responses.
+ */
 @RestControllerAdvice
 public class RestExceptionHandler {
 
-    // 1) Validation errors
+    /**
+     * Handles validation failures triggered by @Valid.
+     * Returns 400 with a list of field-level error messages.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
         List<Map<String, String>> errors = ex.getBindingResult()
@@ -38,23 +47,23 @@ public class RestExceptionHandler {
                 ));
     }
 
-    // 2) JSON parse / unreadable message - generic and reflection-friendly
+    /**
+     * Handles malformed JSON or type conversion errors.
+     * Attempts to extract useful information from the underlying cause.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleJsonParseError(HttpMessageNotReadableException ex) {
         String message = "Malformed JSON request";
         Throwable cause = ex.getMostSpecificCause();
 
         if (cause != null) {
-            // Try to build a friendlier message by reflection (works across different Jackson repackagings)
             try {
-                // Attempt to extract value, path and targetType via common method names used by Jackson's InvalidFormatException
                 Object value = invokeIfExists(cause, "getValue");
                 Object pathObj = invokeIfExists(cause, "getPath");
                 Object targetType = invokeIfExists(cause, "getTargetType");
 
                 String path = null;
                 if (pathObj != null) {
-                    // getPath typically returns a List of Reference objects; join their field names if possible
                     try {
                         @SuppressWarnings("unchecked")
                         List<Object> pathList = (List<Object>) pathObj;
@@ -76,13 +85,13 @@ public class RestExceptionHandler {
                 String expectedType = (targetType != null) ? targetType.toString() : null;
 
                 if (invalidValue != null && path != null && expectedType != null) {
-                    message = String.format("Invalid value '%s' for field '%s'. Expected type: %s",
+                    message = String.format(
+                            "Invalid value '%s' for field '%s'. Expected type: %s",
                             invalidValue, path, expectedType);
                 } else if (cause.getMessage() != null) {
                     message = cause.getMessage();
                 }
-            } catch (Exception reflectionEx) {
-                // reflection failed — fall back to the raw cause message
+            } catch (Exception ignored) {
                 if (cause.getMessage() != null) {
                     message = cause.getMessage();
                 }
@@ -99,7 +108,10 @@ public class RestExceptionHandler {
                 ));
     }
 
-    // 3) Not found
+    /**
+     * Handles domain-specific not-found errors.
+     * Returns 404 with an explanatory message.
+     */
     @ExceptionHandler(SatelliteNotFoundException.class)
     public ResponseEntity<?> handleNotFound(SatelliteNotFoundException ex) {
         return ResponseEntity
@@ -112,7 +124,10 @@ public class RestExceptionHandler {
                 ));
     }
 
-    // 4) Fallback
+    /**
+     * Fallback handler for unexpected errors.
+     * Returns 500 Internal Server Error.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneric(Exception ex) {
         return ResponseEntity
@@ -125,7 +140,10 @@ public class RestExceptionHandler {
                 ));
     }
 
-    // Helper: attempt to call a no-arg method by name on an object and return the result (or null)
+    /**
+     * Utility method used to safely invoke optional methods via reflection.
+     * Returns null if the method does not exist or invocation fails.
+     */
     private static Object invokeIfExists(Object target, String methodName) {
         if (target == null) return null;
         try {
