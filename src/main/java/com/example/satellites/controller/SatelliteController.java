@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller providing CRUD operations for Satellite resources.
+ */
 @RestController
 @RequestMapping("/api/satellites")
 public class SatelliteController {
@@ -25,6 +28,7 @@ public class SatelliteController {
         this.service = service;
     }
 
+    /** Returns all satellites. */
     @GetMapping
     public ResponseEntity<List<SatelliteResponse>> getAll() {
         List<SatelliteResponse> list = service.findAll()
@@ -34,6 +38,7 @@ public class SatelliteController {
         return ResponseEntity.ok(list);
     }
 
+    /** Returns a satellite by id or 404 if not found. */
     @GetMapping("/{id}")
     public ResponseEntity<SatelliteResponse> getById(@PathVariable Long id) {
         return service.findById(id)
@@ -42,6 +47,7 @@ public class SatelliteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Creates a new satellite and returns 201 Created. */
     @PostMapping
     public ResponseEntity<SatelliteResponse> create(@Valid @RequestBody SatelliteRequest request) {
         Satellite entity = SatelliteMapper.toEntity(request);
@@ -51,27 +57,18 @@ public class SatelliteController {
         return ResponseEntity.created(location).body(response);
     }
 
-    /**
-     * PUT /api/satellites/{id}
-     * - Validates the incoming DTO
-     * - Loads the existing entity (or throws 404)
-     * - Copies allowed fields from DTO to entity
-     * - Saves and returns 200 with SatelliteResponse
-     */
+    /** Updates an existing satellite. */
     @PutMapping("/{id}")
     public ResponseEntity<SatelliteResponse> update(
             @PathVariable Long id,
             @Valid @RequestBody SatelliteRequest request) {
 
-        // Load
         Satellite existing = service.getByIdOrThrow(id);
 
-        // Update
         existing.setName(request.getName());
         existing.setOrbit(request.getOrbit());
         existing.setLaunchDate(request.getLaunchDate());
 
-        // Update or replace parameters
         if (request.getParameters() != null) {
             SatelliteParameters params = existing.getParameters();
             if (params == null) {
@@ -85,18 +82,19 @@ public class SatelliteController {
             existing.setParameters(null);
         }
 
-        // Save
         Satellite saved = service.save(existing);
         SatelliteResponse resp = SatelliteMapper.toResponse(saved);
         return ResponseEntity.ok(resp);
     }
 
+    /** Deletes a satellite. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
+    /** Returns only satellite position (lat, lon, alt). */
     @GetMapping("/{id}/position")
     public ResponseEntity<?> getPosition(@PathVariable Long id) {
         Satellite s = service.getByIdOrThrow(id);
