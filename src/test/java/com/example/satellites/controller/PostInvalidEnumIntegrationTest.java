@@ -14,7 +14,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Verifies that POSTing a payload with an invalid enum value for 'orbit' returns a parse error (400).
+ * Integration test verifying that an invalid enum value
+ * for 'orbit' results in a 400 Bad Request response.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,10 +31,19 @@ class PostInvalidEnumIntegrationTest {
     record Params(Double lat, Double lon, Double alt) {}
     record SatelliteReq(String name, String orbit, String launchDate, Params parameters) {}
 
+    /**
+     * Ensures that providing an unsupported orbit type
+     * triggers JSON parsing error handling.
+     */
     @Test
     void postInvalidEnum_returnsBadRequestParseMessage() throws Exception {
-        // 'orbit' = "LOW" is invalid (valid: LEO, MEO, GEO)
-        var req = new SatelliteReq("InvalidSat", "LOW", "1990-04-24T12:33:00", new Params(1.0, 2.0, 3.0));
+        var req = new SatelliteReq(
+                "InvalidSat",
+                "LOW",  // Invalid orbit (valid: LEO, MEO, GEO)
+                "1990-04-24T12:33:00",
+                new Params(1.0, 2.0, 3.0)
+        );
+
         String json = objectMapper.writeValueAsString(req);
 
         mvc.perform(post("/api/satellites")
