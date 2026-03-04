@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for {@link com.example.satellites.service.SatelliteService}.
+ * Unit tests for SatelliteService.
  *
  * Uses Mockito to mock repository interactions and verifies service behavior
  * for common CRUD scenarios and error paths.
