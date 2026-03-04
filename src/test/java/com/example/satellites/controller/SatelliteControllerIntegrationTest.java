@@ -12,10 +12,15 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// Start the full Spring context and autoconfigure MockMvc
+/**
+ * Integration tests exercising the full controller -> service -> repository stack.
+ *
+ * The tests run with a real Spring context and an in-memory H2 database.
+ * Each test is transactional and rolled back to keep tests isolated.
+ */
 @SpringBootTest
 @org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-@Transactional         // rollback after each test for isolation
+@Transactional
 class SatelliteControllerIntegrationTest {
 
     @Autowired
@@ -27,6 +32,14 @@ class SatelliteControllerIntegrationTest {
     record Params(Double lat, Double lon, Double alt) {}
     record SatelliteReq(String name, String orbit, String launchDate, Params parameters) {}
 
+    /**
+     * Full CRUD flow:
+     * 1) POST create
+     * 2) GET list
+     * 3) PUT update
+     * 4) GET position
+     * 5) DELETE and verify 404 afterwards
+     */
     @Test
     void fullCrudFlow() throws Exception {
         // 1) POST -> create
